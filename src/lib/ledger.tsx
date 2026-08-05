@@ -1,4 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { apiFetch, newIdempotencyKey } from "./api";
+import { useAuth } from "./auth";
 
 export type LedgerEntry = {
   id: string;
@@ -21,13 +23,20 @@ type LedgerCtx = {
   entries: LedgerEntry[];
   session: GameSession;
   newSession: (game: GameSession["game"]) => void;
-  deposit: (amount: number) => void;
+  deposit: (amount: number) => Promise<void>;
   bet: (amount: number, game: GameSession["game"]) => void;
   win: (amount: number, note: string) => void;
   withdraw: (amount: number) => void;
 };
 
-const START_BALANCE = 1000;
+type ApiEntry = {
+  id: number;
+  kind: string;
+  amount: number;
+  idempotency_key: string;
+  meta: string;
+  created_at: string;
+};
 
 const ctx = createContext<LedgerCtx | null>(null);
 
@@ -37,19 +46,20 @@ function randHex(len: number): string {
   return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+function noteFromMeta(kind: string, metaRaw: string): string {
+  try {
+    const meta = JSON.parse(metaRaw || "{}") as { note?: string; game?: string };
+    if (meta.note) return meta.note;
+    if (meta.game) return `${kind === "bet" ? "Apuesta" : "Resultado"} en ${meta.game}`;
+  } catch {
+    /* noop */
+  }
+  return kind === "deposit" ? "Compra de fichas" : kind;
+}
+
 export function LedgerProvider({ children }: { children: React.ReactNode }) {
-  const [balance, setBalance] = useState<number>(() => {
-    const v = Number(localStorage.getItem("onyx_balance"));
-    return Number.isFinite(v) && v > 0 ? v : START_BALANCE;
-  });
-  const [entries, setEntries] = useState<LedgerEntry[]>(() => {
-    try {
-      const v = localStorage.getItem("onyx_entries");
-      return v ? (JSON.parse(v) as LedgerEntry[]) : [];
-    } catch {
-      return [];
-    }
-  });
+  const { token, user, setChips } = useAuth();
+  const [entries, setEntries] = useState<LedgerEntry[]>([]);
   const [session, setSession] = useState<GameSession>(() => ({
     game: "crash",
     serverSeed: randHex(32),
@@ -59,11 +69,31 @@ export function LedgerProvider({ children }: { children: React.ReactNode }) {
   }));
 
   useEffect(() => {
-    localStorage.setItem("onyx_balance", String(balance));
-  }, [balance]);
-  useEffect(() => {
-    localStorage.setItem("onyx_entries", JSON.stringify(entries.slice(0, 200)));
-  }, [entries]);
+    if (!token) {
+      setEntries([]);
+      return;
+    }
+    let cancelled = false;
+    apiFetch<ApiEntry[]>("/api/ledger/entries?limit=100", { token })
+      .then((rows) => {
+        if (cancelled) return;
+        setEntries(
+          rows.map((r) => ({
+            id: String(r.id),
+            ts: new Date(r.created_at).getTime(),
+            kind: (r.kind === "payout" ? "win" : r.kind) as LedgerEntry["kind"],
+            amount: r.kind === "bet" || r.kind === "withdraw" ? -Math.abs(r.amount) : Math.abs(r.amount),
+            note: noteFromMeta(r.kind, r.meta),
+          }))
+        );
+      })
+      .catch(() => {
+        /* si falla, se conserva lo que ya hay en memoria */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [token]);
 
   const push = useCallback((e: Omit<LedgerEntry, "id" | "ts">) => {
     setEntries((prev) => [{ id: randHex(8), ts: Date.now(), ...e }, ...prev].slice(0, 200));
@@ -74,40 +104,66 @@ export function LedgerProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const deposit = useCallback(
-    (amount: number) => {
-      setBalance((b) => b + amount);
-      push({ kind: "deposit", amount, note: `Depósito USDT confirmado (sandbox)` });
+    async (amount: number) => {
+      if (!token) throw new Error("Inicia sesión para comprar fichas");
+      const res = await apiFetch<{ chips: number; deposited: number }>("/api/ledger/deposit", {
+        method: "POST",
+        token,
+        body: JSON.stringify({ amount, idempotency_key: newIdempotencyKey() }),
+      });
+      setChips(res.chips);
+      push({ kind: "deposit", amount, note: "Compra de fichas confirmada" });
     },
-    [push]
+    [token, setChips, push]
+  );
+
+  const adjust = useCallback(
+    async (kind: "bet" | "win" | "withdraw", amount: number, game: string, note: string) => {
+      if (!token) return;
+      try {
+        const res = await apiFetch<{ chips: number }>("/api/ledger/adjust", {
+          method: "POST",
+          token,
+          body: JSON.stringify({ kind, amount, game, note, idempotency_key: newIdempotencyKey() }),
+        });
+        setChips(res.chips);
+      } catch {
+        /* la ronda ya se jugo en el cliente; el balance se resincroniza en el proximo refresh */
+      }
+    },
+    [token, setChips]
   );
 
   const bet = useCallback(
     (amount: number, game: GameSession["game"]) => {
-      setBalance((b) => b - amount);
+      setChips(Math.max(0, (user?.chips ?? 0) - amount));
       push({ kind: "bet", amount: -amount, note: `Apuesta en ${game}` });
+      void adjust("bet", amount, game, `Apuesta en ${game}`);
     },
-    [push]
+    [user, setChips, push, adjust]
   );
 
   const win = useCallback(
     (amount: number, note: string) => {
-      setBalance((b) => b + amount);
+      setChips((user?.chips ?? 0) + amount);
       push({ kind: "win", amount, note });
+      void adjust("win", amount, session.game, note);
     },
-    [push]
+    [user, setChips, push, adjust, session.game]
   );
 
   const withdraw = useCallback(
     (amount: number) => {
-      setBalance((b) => b - amount);
-      push({ kind: "withdraw", amount: -amount, note: "Retiro USDT (sandbox — no enviado)" });
+      setChips(Math.max(0, (user?.chips ?? 0) - amount));
+      push({ kind: "withdraw", amount: -amount, note: "Canje de fichas" });
+      void adjust("withdraw", amount, "withdraw", "Canje de fichas");
     },
-    [push]
+    [user, setChips, push, adjust]
   );
 
   const value = useMemo(
-    () => ({ balance, entries, session, newSession, deposit, bet, win, withdraw }),
-    [balance, entries, session, newSession, deposit, bet, win, withdraw]
+    () => ({ balance: user?.chips ?? 0, entries, session, newSession, deposit, bet, win, withdraw }),
+    [user, entries, session, newSession, deposit, bet, win, withdraw]
   );
 
   return <ctx.Provider value={value}>{children}</ctx.Provider>;

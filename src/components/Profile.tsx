@@ -1,9 +1,11 @@
 import { Trophy, ArrowDownToLine, ArrowUpFromLine, Dice5 } from "lucide-react";
 import { useLedger } from "../lib/ledger";
+import { useAuth } from "../lib/auth";
 import { fmtMoney } from "../lib/games";
 
 export default function Profile() {
   const { balance, entries } = useLedger();
+  const { user } = useAuth();
 
   const totals = entries.reduce(
     (acc, e) => {
@@ -26,23 +28,23 @@ export default function Profile() {
       <div className="glass rounded-xl p-5">
         <div className="flex items-center gap-4">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-b from-[#38e0ff] to-[#0077b6] text-lg font-black text-[#04121a]">
-            MX
+            {(user?.username || "ON").slice(0, 2).toUpperCase()}
           </div>
           <div>
-            <p className="text-sm font-black text-white">Jugador demo</p>
-            <p className="text-[11px] text-sub">Cuenta sandbox · mayor de 18 · ONYX</p>
+            <p className="text-sm font-black text-white">{user?.username || "Jugador"}</p>
+            <p className="text-[11px] text-sub">{user?.email} · mayor de 18 · ONYX</p>
           </div>
           <div className="ml-auto text-right">
-            <p className="text-[10px] uppercase tracking-wider text-sub">Saldo demo</p>
+            <p className="text-[10px] uppercase tracking-wider text-sub">Saldo</p>
             <p className="text-xl font-black text-[#00CFFF]">{fmtMoney(balance)}</p>
           </div>
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
-          <MiniStat icon={<ArrowDownToLine size={13} />} label="Depositado" value={fmtMoney(totals.deposit)} />
+          <MiniStat icon={<ArrowDownToLine size={13} />} label="Comprado" value={fmtMoney(totals.deposit)} />
           <MiniStat icon={<Dice5 size={13} />} label="Apostado" value={fmtMoney(totals.bet)} />
           <MiniStat icon={<Trophy size={13} />} label="Ganado" value={fmtMoney(totals.win)} />
-          <MiniStat icon={<ArrowUpFromLine size={13} />} label="Retirado" value={fmtMoney(totals.withdraw)} />
+          <MiniStat icon={<ArrowUpFromLine size={13} />} label="Canjeado" value={fmtMoney(totals.withdraw)} />
         </div>
       </div>
 
