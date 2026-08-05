@@ -21,7 +21,7 @@ export default function Shell({
         </div>
         <SideIcon active={screen === "home"} onClick={() => setScreen("home")} icon={<Home size={18} />} label="Home" />
         <SideIcon active={screen === "profile"} onClick={() => setScreen("profile")} icon={<Trophy size={18} />} label="Perfil" />
-        <SideIcon active={screen === "deposit"} onClick={() => setScreen("deposit")} icon={<Banknote size={18} />} label="Depósito" />
+        <SideIcon active={screen === "deposit"} onClick={() => setScreen("deposit")} icon={<Banknote size={18} />} label="Comprar fichas" />
         <div className="mt-auto flex flex-col items-center gap-2">
           <SideIcon onClick={() => {}} icon={<MessageCircle size={18} />} label="Soporte 24/7" />
           <SideIcon onClick={() => {}} icon={<Settings size={18} />} label="Ajustes" />
@@ -44,7 +44,7 @@ export default function Shell({
               [
                 { id: "home", label: "Home" },
                 { id: "profile", label: "Profile" },
-                { id: "deposit", label: "Free Money" },
+                { id: "deposit", label: "Comprar" },
               ] as const
             ).map((t) => (
               <button
@@ -72,7 +72,7 @@ export default function Shell({
               onClick={() => setScreen("deposit")}
               className="btn-blue hidden px-3 py-1.5 text-xs sm:block"
             >
-              + Depósito
+              + Fichas
             </button>
           </div>
         </header>
@@ -80,7 +80,7 @@ export default function Shell({
         <footer className="mx-auto w-full max-w-6xl px-4 pb-6">
           <div className="glass rounded-xl px-4 py-3 text-center">
             <p className="text-[11px] text-sub">
-              ONYX Casino es una <span className="font-semibold text-white">demo de marketing con ledger sandbox</span>. No se procesa dinero real; los retiros no se envían. Provably fair con semillas verificables. Juega responsable: solo para mayores de 18.
+              ONYX es un <span className="font-semibold text-white">casino social con fichas virtuales</span>. Las fichas no tienen valor monetario, no son transferibles y no pueden retirarse ni canjearse por efectivo. Solo para mayores de 18.
             </p>
           </div>
         </footer>

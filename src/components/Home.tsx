@@ -22,7 +22,7 @@ export default function Home({ setScreen }: { setScreen: (s: Screen) => void }) 
               <ShieldCheck size={13} /> ORIGINAL GAMES · PROVABLY FAIR
             </span>
             <h1 className="mt-4 text-3xl font-black leading-tight text-white md:text-4xl">
-              Juegos que <span className="text-[#00CFFF] [text-shadow:0_0_24px_rgba(0,207,255,0.6)]">pagan de verdad</span>
+              Juegos que <span className="text-[#00CFFF] [text-shadow:0_0_24px_rgba(0,207,255,0.6)]">se sienten de verdad</span>
             </h1>
             <p className="mt-3 max-w-md text-sm leading-relaxed text-sub">
               Crash, Mines, Plinko y Towers con semillas verificables y ledger transparente. Cada ronda se
@@ -36,11 +36,11 @@ export default function Home({ setScreen }: { setScreen: (s: Screen) => void }) 
                 onClick={() => setScreen("deposit")}
                 className="glass flex items-center gap-2 px-5 py-3 text-sm font-semibold text-white transition-all hover:border-[rgba(0,207,255,0.5)]"
               >
-                <ArrowRight size={15} className="text-[#00CFFF]" /> Recargar demo
+                <ArrowRight size={15} className="text-[#00CFFF]" /> Comprar fichas
               </button>
             </div>
             <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-[11px] text-sub">
-              <span className="flex items-center gap-1.5"><Clock size={12} className="text-[#00CFFF]" /> Retiros demo 24/7</span>
+              <span className="flex items-center gap-1.5"><Clock size={12} className="text-[#00CFFF]" /> Fichas virtuales 24/7</span>
               <span className="flex items-center gap-1.5"><ShieldCheck size={12} className="text-[#27AE60]" /> RNG auditable</span>
               <span className="flex items-center gap-1.5"><Gem size={12} className="text-[#2D7FFF]" /> Sin cuentas fantasma</span>
             </div>
@@ -49,7 +49,7 @@ export default function Home({ setScreen }: { setScreen: (s: Screen) => void }) 
           <div className="glass grid grid-cols-2 gap-3 rounded-xl p-4">
             <Stat label="Saldo demo" value={fmtMoney(balance)} accent="#00CFFF" />
             <Stat label="RTP promedio" value="97.5%" accent="#27AE60" />
-            <Stat label="Pago retiros" value="Real (sandbox)" accent="#2D7FFF" />
+            <Stat label="Tipo de saldo" value="Solo virtual" accent="#2D7FFF" />
             <Stat label="Cero trucos" value="Verificable" accent="#F5C97B" />
           </div>
         </div>
@@ -58,7 +58,7 @@ export default function Home({ setScreen }: { setScreen: (s: Screen) => void }) 
       <section>
         <div className="mb-4 flex items-end justify-between">
           <h2 className="text-lg font-black tracking-widest text-white">EL LOBBY</h2>
-          <span className="text-[11px] text-sub">6 juegos · demo transparente</span>
+          <span className="text-[11px] text-sub">4 juegos · experiencia transparente</span>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {GAMES.map((g, i) => (
