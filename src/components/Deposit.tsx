@@ -78,7 +78,7 @@ export default function Deposit() {
           <button onClick={checkout} className="btn-primary flex w-full items-center justify-center gap-2 py-3.5 text-sm">
             <CreditCard size={17} /> {configured ? `PAGAR $${pack.price} MXN` : "PROBAR PAQUETE DEMO"}
           </button>
-          <p className="mt-2 text-center text-[10px] text-sub">{configured ? "Serás redirigido al checkout seguro" : "Configura VITE_STRIPE_PAYMENT_LINK para habilitar cobro real"}</p>
+          <p className="mt-2 text-center text-[10px] text-sub">{configured ? "Serás redirigido al checkout seguro" : "El pago estará disponible próximamente"}</p>
           {demoAdded && (
             <div className="mt-3 flex items-center justify-center gap-2 rounded-lg border border-[rgba(39,174,96,0.35)] bg-green/10 px-3 py-2 text-xs font-bold text-[#27AE60]">
               <Check size={14} /> {pack.chips.toLocaleString("es-MX")} fichas agregadas en demo
