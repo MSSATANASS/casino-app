@@ -23,7 +23,7 @@ function seedFromString(s: string): number {
 const PAYOUTS: Record<number, number> = { 0: 0.5, 1: 0.7, 2: 1, 3: 1.5, 4: 2.5, 5: 5, 6: 12, 7: 5, 8: 2.5, 9: 1.5, 10: 1, 11: 0.7, 12: 0.5 };
 
 export default function Plinko() {
-  const { balance, session, bet, win, newSession } = useLedger();
+  const { balance, isAuthed, session, bet, win, newSession } = useLedger();
   const [amount, setAmount] = useState(5);
   const [dropping, setDropping] = useState(false);
   const [ball, setBall] = useState<{ x: number; y: number; col: number } | null>(null);
@@ -34,7 +34,7 @@ export default function Plinko() {
   useEffect(() => () => cancelAnimationFrame(raf.current), []);
 
   const drop = () => {
-    if (dropping || amount <= 0 || amount > balance) return;
+    if (dropping || amount <= 0 || (isAuthed && amount > balance)) return;
     bet(amount, "plinko");
     setDropping(true);
     setResult(null);
@@ -140,10 +140,10 @@ export default function Plinko() {
         <div className="flex flex-col justify-end">
           <button
             onClick={drop}
-            disabled={dropping || amount <= 0 || amount > balance}
+            disabled={dropping || amount <= 0 || (isAuthed && amount > balance)}
             className="btn-primary px-10 py-3 text-sm disabled:opacity-40"
           >
-            BET {amount > 0 ? `$${amount.toFixed(2)}` : ""}
+            {isAuthed ? `BET ${amount > 0 ? `$${amount.toFixed(2)}` : ""}` : "Inicia sesión para jugar"}
           </button>
         </div>
       </div>

@@ -20,6 +20,7 @@ export type GameSession = {
 
 type LedgerCtx = {
   balance: number;
+  isAuthed: boolean;
   entries: LedgerEntry[];
   session: GameSession;
   newSession: (game: GameSession["game"]) => void;
@@ -58,7 +59,7 @@ function noteFromMeta(kind: string, metaRaw: string): string {
 }
 
 export function LedgerProvider({ children }: { children: React.ReactNode }) {
-  const { token, user, setChips } = useAuth();
+  const { token, user, setChips, promptLogin } = useAuth();
   const [entries, setEntries] = useState<LedgerEntry[]>([]);
   const [session, setSession] = useState<GameSession>(() => ({
     game: "crash",
@@ -105,7 +106,10 @@ export function LedgerProvider({ children }: { children: React.ReactNode }) {
 
   const deposit = useCallback(
     async (amount: number) => {
-      if (!token) throw new Error("Inicia sesión para comprar fichas");
+      if (!token) {
+        promptLogin();
+        throw new Error("Inicia sesión para comprar fichas");
+      }
       const res = await apiFetch<{ chips: number; deposited: number }>("/api/ledger/deposit", {
         method: "POST",
         token,
@@ -114,7 +118,7 @@ export function LedgerProvider({ children }: { children: React.ReactNode }) {
       setChips(res.chips);
       push({ kind: "deposit", amount, note: "Compra de fichas confirmada" });
     },
-    [token, setChips, push]
+    [token, setChips, push, promptLogin]
   );
 
   const adjust = useCallback(
@@ -136,11 +140,15 @@ export function LedgerProvider({ children }: { children: React.ReactNode }) {
 
   const bet = useCallback(
     (amount: number, game: GameSession["game"]) => {
+      if (!token) {
+        promptLogin();
+        return;
+      }
       setChips(Math.max(0, (user?.chips ?? 0) - amount));
       push({ kind: "bet", amount: -amount, note: `Apuesta en ${game}` });
       void adjust("bet", amount, game, `Apuesta en ${game}`);
     },
-    [user, setChips, push, adjust]
+    [token, user, setChips, push, adjust, promptLogin]
   );
 
   const win = useCallback(
@@ -162,8 +170,8 @@ export function LedgerProvider({ children }: { children: React.ReactNode }) {
   );
 
   const value = useMemo(
-    () => ({ balance: user?.chips ?? 0, entries, session, newSession, deposit, bet, win, withdraw }),
-    [user, entries, session, newSession, deposit, bet, win, withdraw]
+    () => ({ balance: user?.chips ?? 0, isAuthed: Boolean(token), entries, session, newSession, deposit, bet, win, withdraw }),
+    [user, token, entries, session, newSession, deposit, bet, win, withdraw]
   );
 
   return <ctx.Provider value={value}>{children}</ctx.Provider>;

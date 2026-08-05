@@ -25,7 +25,7 @@ function seedFromString(s: string): number {
 const PAYOUTS = [1, 1.5, 2.4, 3.6, 5.5, 8.5, 13, 20, 31, 46, 68, 100];
 
 export default function Towers() {
-  const { balance, session, bet, win, newSession } = useLedger();
+  const { balance, isAuthed, session, bet, win, newSession } = useLedger();
   const [amount, setAmount] = useState(5);
   const [level, setLevel] = useState(0);
   const [picked, setPicked] = useState<Record<number, number>>({});
@@ -49,7 +49,7 @@ export default function Towers() {
   }, [session.serverSeed]);
 
   const startNew = () => {
-    if (amount <= 0 || amount > balance) return;
+    if (amount <= 0 || (isAuthed && amount > balance)) return;
     bet(amount, "towers");
     setLevel(0);
     setPicked({});
@@ -58,7 +58,7 @@ export default function Towers() {
   };
 
   const pick = (r: number, c: number) => {
-    if (r !== level || done || lost || picked[r] !== undefined) return;
+    if (!isAuthed || r !== level || done || lost || picked[r] !== undefined) return;
     if (board[r] === c) {
       setLost(true);
       setPicked((p) => ({ ...p, [r]: c }));
@@ -145,10 +145,10 @@ export default function Towers() {
           </button>
           <button
             onClick={startNew}
-            disabled={(level > 0 && !done && !lost) || amount <= 0 || amount > balance}
+            disabled={(level > 0 && !done && !lost) || amount <= 0 || (isAuthed && amount > balance)}
             className="btn-primary px-8 py-3 text-sm disabled:opacity-40"
           >
-            <RotateCcw size={13} className="mr-1 inline" /> NUEVA RONDA
+            <RotateCcw size={13} className="mr-1 inline" /> {isAuthed ? "NUEVA RONDA" : "Inicia sesión para jugar"}
           </button>
         </div>
       </div>

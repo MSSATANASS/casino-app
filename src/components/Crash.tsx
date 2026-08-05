@@ -19,7 +19,7 @@ function crashPointFromSeed(seed: string): number {
 type Phase = "idle" | "running" | "crashed";
 
 export default function Crash() {
-  const { balance, session, bet, win, newSession } = useLedger();
+  const { balance, isAuthed, session, bet, win, newSession } = useLedger();
   const [amount, setAmount] = useState(5);
   const [phase, setPhase] = useState<Phase>("idle");
   const [mult, setMult] = useState(1.0);
@@ -30,7 +30,7 @@ export default function Crash() {
   const lastTs = useRef(0);
 
   const start = () => {
-    if (phase !== "idle" || amount <= 0 || amount > balance) return;
+    if (phase !== "idle" || amount <= 0 || (isAuthed && amount > balance)) return;
     bet(amount, "crash");
     setCashed(false);
     setMult(1.0);
@@ -137,10 +137,10 @@ export default function Crash() {
         <div className="flex flex-col justify-end gap-2">
           <button
             onClick={start}
-            disabled={phase !== "idle" || amount <= 0 || amount > balance}
+            disabled={phase !== "idle" || amount <= 0 || (isAuthed && amount > balance)}
             className="btn-primary px-8 py-3 text-sm disabled:opacity-40"
           >
-            {phase === "idle" ? "BET" : "Ronda en curso"}
+            {phase === "idle" ? (isAuthed ? "BET" : "Inicia sesión para jugar") : "Ronda en curso"}
           </button>
           <button
             onClick={cashOut}

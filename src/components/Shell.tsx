@@ -1,9 +1,9 @@
-import { Home, Banknote, MessageCircle, Settings, Trophy, Wallet } from "lucide-react";
-import OnyxMark from "./OnyxMark";
+import { LogIn, Home, Banknote, MessageCircle, Settings, Trophy, Wallet } from "lucide-react";
 import type { Screen } from "../lib/games";
 import { useLedger } from "../lib/ledger";
 import { useAuth } from "../lib/auth";
 import { fmtMoney } from "../lib/games";
+import OnyxMark from "./OnyxMark";
 
 export default function Shell({
   screen,
@@ -15,7 +15,7 @@ export default function Shell({
   children: React.ReactNode;
 }) {
   const { balance } = useLedger();
-  const { user, logout } = useAuth();
+  const { user, logout, promptLogin } = useAuth();
   const initials = (user?.username || "ON").slice(0, 2).toUpperCase();
 
   return (
@@ -30,13 +30,23 @@ export default function Shell({
         <div className="mt-auto flex flex-col items-center gap-2">
           <SideIcon onClick={() => {}} icon={<MessageCircle size={18} />} label="Soporte 24/7" />
           <SideIcon onClick={() => {}} icon={<Settings size={18} />} label="Ajustes" />
-          <button
-            onClick={logout}
-            title={`Cerrar sesión (${user?.username || ""})`}
-            className="mt-2 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-b from-[#38e0ff] to-[#0077b6] text-sm font-bold text-[#04121a] transition-transform hover:scale-105"
-          >
-            {initials}
-          </button>
+          {user ? (
+            <button
+              onClick={logout}
+              title={`Cerrar sesión (${user.username})`}
+              className="mt-2 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-b from-[#38e0ff] to-[#0077b6] text-sm font-bold text-[#04121a] transition-transform hover:scale-105"
+            >
+              {initials}
+            </button>
+          ) : (
+            <button
+              onClick={promptLogin}
+              title="Iniciar sesión"
+              className="mt-2 flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(0,207,255,0.4)] text-[#00CFFF] transition-all hover:bg-[rgba(0,207,255,0.12)]"
+            >
+              <LogIn size={16} />
+            </button>
+          )}
         </div>
       </aside>
 
@@ -73,22 +83,31 @@ export default function Shell({
             ))}
           </nav>
           <div className="flex items-center gap-2">
-            <span className="hidden text-xs font-semibold text-white/70 sm:inline">{user?.username}</span>
-            <div className="glass flex items-center gap-2 rounded-lg px-3 py-1.5">
-              <Wallet size={14} className="text-[#00CFFF]" />
-              <span className="text-sm font-bold text-white">{fmtMoney(balance)}</span>
-            </div>
-            <button onClick={() => setScreen("deposit")} className="btn-blue hidden px-3 py-1.5 text-xs sm:block">
-              + Fichas
-            </button>
+            {user ? (
+              <>
+                <span className="hidden text-xs font-semibold text-white/70 sm:inline">{user.username}</span>
+                <div className="glass flex items-center gap-2 rounded-lg px-3 py-1.5">
+                  <Wallet size={14} className="text-[#00CFFF]" />
+                  <span className="text-sm font-bold text-white">{fmtMoney(balance)}</span>
+                </div>
+                <button onClick={() => setScreen("deposit")} className="btn-blue hidden px-3 py-1.5 text-xs sm:block">
+                  + Fichas
+                </button>
+              </>
+            ) : (
+              <button onClick={promptLogin} className="btn-primary flex items-center gap-1.5 px-4 py-1.5 text-xs">
+                <LogIn size={13} /> Iniciar sesión
+              </button>
+            )}
           </div>
         </header>
         <main className="mx-auto w-full max-w-6xl flex-1 px-3 py-4 md:px-4">{children}</main>
         <footer className="mx-auto w-full max-w-6xl px-4 pb-6">
           <div className="glass rounded-xl px-4 py-3 text-center">
             <p className="text-[11px] text-sub">
-              ONYX es un <span className="font-semibold text-white">casino social con fichas virtuales</span>. Las fichas no tienen valor
-              monetario, no son transferibles y no pueden retirarse ni canjearse por efectivo. Solo para mayores de 18.
+              ONYX es un <span className="font-semibold text-white">casino social con fichas virtuales</span>. Explora gratis; para jugar
+              necesitas una cuenta. Las fichas no tienen valor monetario, no son transferibles y no pueden retirarse ni canjearse por
+              efectivo. Solo para mayores de 18.
             </p>
           </div>
         </footer>

@@ -14,7 +14,7 @@ const PAYMENT_BADGES = ["VISA", "MASTERCARD", "AMEX", "APPLE PAY", "GOOGLE PAY"]
 
 export default function Deposit() {
   const { balance, deposit } = useLedger();
-  const { user } = useAuth();
+  const { user, promptLogin } = useAuth();
   const [selected, setSelected] = useState(1);
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -24,9 +24,13 @@ export default function Deposit() {
   const baseRate = PACKS[0].chips / PACKS[0].price;
 
   const checkout = async () => {
+    if (!user) {
+      promptLogin();
+      return;
+    }
     if (paymentLink) {
       const url = new URL(paymentLink);
-      if (user) url.searchParams.set("client_reference_id", String(user.id));
+      url.searchParams.set("client_reference_id", String(user.id));
       window.location.assign(url.toString());
       return;
     }
@@ -51,6 +55,11 @@ export default function Deposit() {
         <p className="mx-auto mt-2 max-w-md text-xs text-sub">
           Fichas virtuales para jugar. No tienen valor monetario, no son transferibles y no pueden retirarse ni canjearse por efectivo.
         </p>
+        {!user && (
+          <p className="mx-auto mt-2 max-w-md text-[11px] font-semibold text-[#00CFFF]">
+            Puedes ver los paquetes libremente. Para comprar necesitas iniciar sesión.
+          </p>
+        )}
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -101,7 +110,7 @@ export default function Deposit() {
             </p>
             <p className="flex justify-between border-t border-white/5 pt-2 text-sub">
               <span>Saldo después</span>
-              <span className="font-bold text-[#27AE60]">{fmtMoney(balance + pack.chips)}</span>
+              <span className="font-bold text-[#27AE60]">{user ? fmtMoney(balance + pack.chips) : "Inicia sesión"}</span>
             </p>
           </div>
 
@@ -129,11 +138,19 @@ export default function Deposit() {
             disabled={status === "loading"}
             className="btn-primary flex w-full items-center justify-center gap-2 py-3.5 text-sm disabled:opacity-60"
           >
-            {status === "loading" ? <Loader2 size={17} className="animate-spin" /> : <CreditCard size={17} />}
-            {configured ? `PAGAR $${pack.price} MXN` : "ACTIVAR PAQUETE (BETA)"}
+            {status === "loading" ? (
+              <Loader2 size={17} className="animate-spin" />
+            ) : (
+              <CreditCard size={17} />
+            )}
+            {!user ? "INICIAR SESIÓN PARA COMPRAR" : configured ? `PAGAR $${pack.price} MXN` : "ACTIVAR PAQUETE (BETA)"}
           </button>
           <p className="mt-2 text-center text-[10px] text-sub">
-            {configured ? "Serás redirigido al checkout seguro de Stripe" : "Cobro con tarjeta próximamente — hoy acredita fichas reales a tu cuenta sin costo"}
+            {!user
+              ? "Es gratis y toma 10 segundos"
+              : configured
+                ? "Serás redirigido al checkout seguro de Stripe"
+                : "Cobro con tarjeta próximamente — hoy acredita fichas reales a tu cuenta sin costo"}
           </p>
           {status === "done" && (
             <div className="mt-3 flex items-center justify-center gap-2 rounded-lg border border-[rgba(39,174,96,0.35)] bg-green/10 px-3 py-2 text-xs font-bold text-[#27AE60]">

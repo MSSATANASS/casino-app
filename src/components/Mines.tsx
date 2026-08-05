@@ -25,7 +25,7 @@ function seedFromString(s: string): number {
 }
 
 export default function Mines() {
-  const { balance, session, bet, win, newSession } = useLedger();
+  const { balance, isAuthed, session, bet, win, newSession } = useLedger();
   const [amount, setAmount] = useState(5);
   const [grid, setGrid] = useState<Cell[]>(() => initGrid(session.serverSeed));
   const [picked, setPicked] = useState(0);
@@ -50,7 +50,7 @@ export default function Mines() {
   }
 
   const startNew = () => {
-    if (amount <= 0 || amount > balance) return;
+    if (amount <= 0 || (isAuthed && amount > balance)) return;
     bet(amount, "mines");
     setGrid(initGrid(session.serverSeed));
     setPicked(0);
@@ -59,7 +59,7 @@ export default function Mines() {
   };
 
   const reveal = (i: number) => {
-    if (done || lost || grid[i].revealed) return;
+    if (!isAuthed || done || lost || grid[i].revealed) return;
     if (grid[i].mine) {
       setLost(true);
       setGrid((g) => g.map((c, j) => (j === i ? { ...c, revealed: true } : c)));
@@ -142,10 +142,10 @@ export default function Mines() {
           </button>
           <button
             onClick={startNew}
-            disabled={(picked > 0 && !done && !lost) || amount <= 0 || amount > balance}
+            disabled={(picked > 0 && !done && !lost) || amount <= 0 || (isAuthed && amount > balance)}
             className="btn-primary px-8 py-3 text-sm disabled:opacity-40"
           >
-            NUEVA RONDA
+            {isAuthed ? "NUEVA RONDA" : "Inicia sesión para jugar"}
           </button>
         </div>
       </div>

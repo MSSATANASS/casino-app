@@ -14,6 +14,9 @@ type AuthCtx = {
   user: PublicUser | null;
   busy: boolean;
   error: string | null;
+  loginPromptOpen: boolean;
+  promptLogin: () => void;
+  closeLoginPrompt: () => void;
   register: (email: string, password: string, username?: string) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
@@ -30,6 +33,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loginPromptOpen, setLoginPromptOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -57,6 +61,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [token]);
 
+  const promptLogin = useCallback(() => setLoginPromptOpen(true), []);
+  const closeLoginPrompt = useCallback(() => setLoginPromptOpen(false), []);
+
   const register = useCallback(async (email: string, password: string, username?: string) => {
     setBusy(true);
     setError(null);
@@ -68,6 +75,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem(TOKEN_KEY, res.token);
       setToken(res.token);
       setUser(res.user);
+      setLoginPromptOpen(false);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "No se pudo crear la cuenta");
       throw e;
@@ -87,6 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem(TOKEN_KEY, res.token);
       setToken(res.token);
       setUser(res.user);
+      setLoginPromptOpen(false);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Credenciales inválidas");
       throw e;
@@ -99,6 +108,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem(TOKEN_KEY);
     setToken(null);
     setUser(null);
+    setLoginPromptOpen(false);
   }, []);
 
   const setChips = useCallback((chips: number) => {
@@ -108,8 +118,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const clearError = useCallback(() => setError(null), []);
 
   const value = useMemo(
-    () => ({ ready, token, user, busy, error, register, login, logout, setChips, clearError }),
-    [ready, token, user, busy, error, register, login, logout, setChips, clearError]
+    () => ({
+      ready,
+      token,
+      user,
+      busy,
+      error,
+      loginPromptOpen,
+      promptLogin,
+      closeLoginPrompt,
+      register,
+      login,
+      logout,
+      setChips,
+      clearError,
+    }),
+    [ready, token, user, busy, error, loginPromptOpen, promptLogin, closeLoginPrompt, register, login, logout, setChips, clearError]
   );
 
   return <ctx.Provider value={value}>{children}</ctx.Provider>;

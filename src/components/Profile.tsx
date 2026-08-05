@@ -1,11 +1,11 @@
-import { Trophy, ArrowDownToLine, ArrowUpFromLine, Dice5 } from "lucide-react";
+import { Trophy, ArrowDownToLine, ArrowUpFromLine, Dice5, LogIn } from "lucide-react";
 import { useLedger } from "../lib/ledger";
 import { useAuth } from "../lib/auth";
 import { fmtMoney } from "../lib/games";
 
 export default function Profile() {
   const { balance, entries } = useLedger();
-  const { user } = useAuth();
+  const { user, promptLogin } = useAuth();
 
   const totals = entries.reduce(
     (acc, e) => {
@@ -18,6 +18,26 @@ export default function Profile() {
     { deposit: 0, win: 0, bet: 0, withdraw: 0 }
   );
 
+  if (!user) {
+    return (
+      <div className="mx-auto flex max-w-md flex-col items-center gap-4 rounded-xl glass p-10 text-center">
+        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-b from-[#38e0ff] to-[#0077b6]">
+          <Trophy size={22} className="text-[#04121a]" />
+        </span>
+        <div>
+          <h1 className="text-sm font-black tracking-widest text-white">TU PERFIL</h1>
+          <p className="mt-2 text-[12px] leading-relaxed text-sub">
+            Crea una cuenta gratis para guardar tu saldo, tu historial de partidas y jugar de verdad. Es lo único que necesitas para
+            empezar.
+          </p>
+        </div>
+        <button onClick={promptLogin} className="btn-primary flex items-center gap-2 px-6 py-2.5 text-sm">
+          <LogIn size={15} /> Iniciar sesión / Crear cuenta
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div>
@@ -28,11 +48,11 @@ export default function Profile() {
       <div className="glass rounded-xl p-5">
         <div className="flex items-center gap-4">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-b from-[#38e0ff] to-[#0077b6] text-lg font-black text-[#04121a]">
-            {(user?.username || "ON").slice(0, 2).toUpperCase()}
+            {(user.username || "ON").slice(0, 2).toUpperCase()}
           </div>
           <div>
-            <p className="text-sm font-black text-white">{user?.username || "Jugador"}</p>
-            <p className="text-[11px] text-sub">{user?.email} · mayor de 18 · ONYX</p>
+            <p className="text-sm font-black text-white">{user.username}</p>
+            <p className="text-[11px] text-sub">{user.email} · mayor de 18 · ONYX</p>
           </div>
           <div className="ml-auto text-right">
             <p className="text-[10px] uppercase tracking-wider text-sub">Saldo</p>
