@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Crown } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import { useLedger } from "../lib/ledger";
 import AmountInput from "./AmountInput";
 
@@ -148,7 +148,7 @@ export default function Towers() {
             disabled={(level > 0 && !done && !lost) || amount <= 0 || amount > balance}
             className="btn-primary px-8 py-3 text-sm disabled:opacity-40"
           >
-            <Crown size={13} className="mr-1 inline" /> NUEVA RONDA
+            <RotateCcw size={13} className="mr-1 inline" /> NUEVA RONDA
           </button>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Crown, Lock, Mail, ShieldCheck, User as UserIcon } from "lucide-react";
+import { Lock, Mail, ShieldCheck, User as UserIcon } from "lucide-react";
+import OnyxMark from "./OnyxMark";
 import { useAuth } from "../lib/auth";
 
 export default function Login() {
@@ -28,7 +29,7 @@ export default function Login() {
       <div className="glass-neon w-full max-w-sm rounded-2xl p-6">
         <div className="mb-5 flex flex-col items-center text-center">
           <span className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-b from-[#38e0ff] to-[#00a8d4] shadow-glow">
-            <Crown size={22} className="text-[#04121a]" />
+            <OnyxMark size={22} className="text-[#04121a]" />
           </span>
           <h1 className="text-lg font-black tracking-[0.2em] text-white">ONYX</h1>
           <p className="mt-1 text-[11px] text-sub">Crea tu cuenta real para guardar tus fichas y tu progreso</p>

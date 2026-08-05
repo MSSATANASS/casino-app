@@ -1,4 +1,5 @@
-import { Crown, Home, Banknote, MessageCircle, Settings, Trophy, Wallet } from "lucide-react";
+import { Home, Banknote, MessageCircle, Settings, Trophy, Wallet } from "lucide-react";
+import OnyxMark from "./OnyxMark";
 import type { Screen } from "../lib/games";
 import { useLedger } from "../lib/ledger";
 import { useAuth } from "../lib/auth";
@@ -21,7 +22,7 @@ export default function Shell({
     <div className="flex min-h-screen">
       <aside className="hidden w-16 flex-col items-center gap-2 border-r border-white/5 bg-[#070b16]/80 py-4 md:flex">
         <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-b from-[#38e0ff] to-[#00a8d4] shadow-glow">
-          <Crown size={20} className="text-[#04121a]" />
+          <OnyxMark size={20} className="text-[#04121a]" />
         </div>
         <SideIcon active={screen === "home"} onClick={() => setScreen("home")} icon={<Home size={18} />} label="Home" />
         <SideIcon active={screen === "profile"} onClick={() => setScreen("profile")} icon={<Trophy size={18} />} label="Perfil" />
@@ -43,7 +44,7 @@ export default function Shell({
         <header className="glass sticky top-0 z-40 mx-3 mt-3 flex items-center justify-between rounded-xl px-4 py-2.5 md:mx-4">
           <div className="flex items-center gap-2">
             <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-b from-[#38e0ff] to-[#00a8d4]">
-              <Crown size={14} className="text-[#04121a]" />
+              <OnyxMark size={14} className="text-[#04121a]" />
             </span>
             <span className="text-sm font-black tracking-[0.2em] text-white">ONYX</span>
           </div>
