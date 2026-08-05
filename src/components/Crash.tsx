@@ -26,7 +26,7 @@ export default function Crash() {
   const [cashed, setCashed] = useState(false);
   const [history, setHistory] = useState<number[]>([]);
   const crashAt = useMemo(() => crashPointFromSeed(session.serverSeed), [session.serverSeed]);
-  const raf = useRef<number>(0);
+  const raf = useRef(0);
   const lastTs = useRef(0);
 
   const start = () => {
@@ -54,7 +54,9 @@ export default function Crash() {
       setMult(crashAt);
       setPhase("crashed");
       setHistory((h) => [crashAt, ...h].slice(0, 12));
+      const t = setTimeout(() => setPhase("idle"), 1600);
       newSession("crash");
+      return () => clearTimeout(t);
     }
   }, [mult, phase, crashAt, newSession]);
 
