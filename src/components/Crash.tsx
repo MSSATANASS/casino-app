@@ -51,11 +51,17 @@ export default function Crash() {
       setMult(crashAt);
       setPhase("crashed");
       setHistory((h) => [crashAt, ...h].slice(0, 12));
-      const t = setTimeout(() => setPhase("idle"), 1600);
-      newSession("crash");
-      return () => clearTimeout(t);
     }
-  }, [mult, phase, crashAt, newSession]);
+  }, [mult, phase, crashAt]);
+
+  useEffect(() => {
+    if (phase !== "crashed") return;
+    const t = setTimeout(() => {
+      setPhase("idle");
+      newSession("crash");
+    }, 1600);
+    return () => clearTimeout(t);
+  }, [phase, newSession]);
 
   useEffect(() => () => cancelAnimationFrame(raf.current), []);
 
