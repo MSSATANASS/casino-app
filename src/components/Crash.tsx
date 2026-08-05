@@ -39,10 +39,7 @@ export default function Crash() {
     const tick = (t: number) => {
       const dt = (t - lastTs.current) / 1000;
       lastTs.current = t;
-      setMult((m) => {
-        const next = Math.min(m * (1 + dt * 0.55), crashAt);
-        return next;
-      });
+      setMult((m) => m * (1 + dt * 0.55));
       raf.current = requestAnimationFrame(tick);
     };
     raf.current = requestAnimationFrame(tick);
