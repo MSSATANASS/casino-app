@@ -45,7 +45,7 @@ export default function Deposit() {
       </div>
 
       <div className="glass-neon rounded-xl p-5">
-        <h2 className="text-xs font-black uppercase tracking-wider text-white">01 · Select your Currency &amp; Network</h2>
+        <h2 className="text-xs font-black uppercase tracking-wider text-white">01 · Selecciona tu moneda y red</h2>
 
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           <div>
@@ -101,8 +101,8 @@ export default function Deposit() {
             <input type="number" min={70} step={1} value={amount} onChange={(e) => setAmount(Math.max(0, Number(e.target.value)))} className="num-input" />
           </div>
           <div className="flex flex-col justify-end gap-1 rounded-xl border border-white/10 bg-[#10162b] p-3 text-[11px]">
-            <p className="flex justify-between text-sub"><span>Minimum Deposit</span><span className="font-bold text-white">$70.00</span></p>
-            <p className="flex justify-between text-sub"><span>Network Fee</span><span className="font-bold text-white">{CURRENCIES[cur].net} (demo)</span></p>
+            <p className="flex justify-between text-sub"><span>Depósito mínimo</span><span className="font-bold text-white">$70.00</span></p>
+            <p className="flex justify-between text-sub"><span>Comisión de red</span><span className="font-bold text-white">{CURRENCIES[cur].net} (demo)</span></p>
             <p className="flex justify-between text-sub"><span>Saldo tras confirmar</span><span className="font-bold text-[#00CFFF]">{fmtMoney(balance + amount)}</span></p>
           </div>
         </div>
